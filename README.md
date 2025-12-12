@@ -31,7 +31,8 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 9. AWS SES
 10. AWS Security Group
 11. AWS AMI instance
-12. AWS IAM 
+12. AWS IAM
+13. AWS KMS - For Ransomware detection scenarios.
 
 ## Scenarios:
 
