@@ -18,6 +18,21 @@
 Usage of quotation is really important while creating detection based on AWS API calls. \
 See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soclabs/blob/main/Queries/17.md)
 
+## Sceanrios based on Different AWS Services:
+
+1. AWS S3
+2. AWS EC2
+3. AWS Secrets Manager
+4. AWS SSM
+5. AWS DNS query logs
+6. AWS Cloud Trail
+7. AWS Management Event Logging
+8. AWS VPC Flow Logs
+9. AWS SES
+10. AWS Security Group
+11. AWS AMI instance
+12. AWS IAM 
+
 ## Scenarios:
 
 | no. | Scenario | Objective | Detection Query (Sigma) | 
