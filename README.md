@@ -32,8 +32,7 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
       - DETECTION: _EventCode_ - `Ec2:GetPasswordData` usage from an external aws account, we can also get attacker ip.
       - DETECTION: Incase of attacker ip rotation, we have to perform SOAR operation of such query to run it in specific time of day, looking for outliers.
     
-    2. **Identify all API operations initiated with EC2 instance credentials where the credential’s originating account does not match the account where the API call occurs normally.**
-    - Same scenario as above, but a different wording: "Theft of EC2 instance credentials from the Instance Metadata Service"
+    2. **Identify all API operations initiated with EC2 instance credentials where the credential’s originating account does not match the account where the API call occurs normally.** OR, **Theft of EC2 instance credentials from the Instance Metadata Service**
     
       - ???
 
@@ -56,7 +55,10 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         - DETECTION: We can additionally also try to look for AWS discovery commands like, `s3:ListBuckets`, `iam:ListRoles`, `iam:ListUsers`, `iam:GetAccountAuthorizationDetails`, etc. \
         - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.discovery.ec2-enumerate-from-instance/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.discovery.ec2-enumerate-from-instance.md).
      
-    5. ****.
+    5. **Identify bulk SSM StartSession requests targeting multiple EC2 instances within a short timeframe**.
+
+    
+    6. **Identify Open Ingress Port 22 on a Security Group**. OR, **AWS EC2 Security Group Public Exposure of SSH Port 22**.
 
 
 3. AWS Secrets Manager
