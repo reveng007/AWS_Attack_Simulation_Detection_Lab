@@ -21,7 +21,16 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 ## Sceanrios based on Different AWS Services:
 
 1. AWS S3
+    - Access S3 from external AWS account:
+       - _EventCode_ - `PutBucketPolicy` usage from an external aws account (Can also use _Effect_ paramter in TH of this attack, which will be set to `Allow`).
+
+    - Disruption CloudTrail Logging by using a S3 Lifecycle Rule thereby setting up a 1 day retention policy on the s3 bucket in which the logs are being stored.
+      - _EventCode_ - `PutBucketLifecycle` usage from an external aws account and _expirationday_ is set to 1.
+    
 2. AWS EC2
+    - 
+
+
 3. AWS Secrets Manager
 4. AWS SSM
 5. AWS DNS query logs
