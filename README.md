@@ -21,45 +21,42 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 ## Sceanrios based on Different AWS Services:
 
 1. AWS S3
-    - **Access S3 from external AWS account**.
-    
+    1. **Access S3 from external AWS account**.
        - _EventCode_ - `S3:PutBucketPolicy` usage from an external aws account (Can also use _Effect_ paramter in TH of this attack, which will be set to `Allow`).
 
-    - **Disrupting CloudTrail Logging by using a S3 Lifecycle Rule thereby setting up a 1 day retention policy on the s3 bucket in which the logs are being stored**.
-    
-      - _EventCode_ - `S3:PutBucketLifecycle` usage from an external aws account and _expirationday_ is set to 1.
+    2. **Disrupting CloudTrail Logging by using a S3 Lifecycle Rule thereby setting up a 1 day retention policy on the s3 bucket in which the logs are being stored**.
+        - _EventCode_ - `S3:PutBucketLifecycle` usage from an external aws account and _expirationday_ is set to 1.
       
 2. AWS EC2
-    - **Identify password data retrieval activities targeting Windows EC2 instances in an AWS environment.**
-    
+    1. **Identify password data retrieval activities targeting Windows EC2 instances in an AWS environment.**
       - DETECTION: _EventCode_ - `Ec2:GetPasswordData` usage from an external aws account, we can also get attacker ip.
       - DETECTION: Incase of attacker ip rotation, we have to perform SOAR operation of such query to run it in specific time of day, looking for outliers.
     
-    - **Identify all API operations initiated with EC2 instance credentials where the credential’s originating account does not match the account where the API call occurs normally.**
+    2. **Identify all API operations initiated with EC2 instance credentials where the credential’s originating account does not match the account where the API call occurs normally.**
     - Same scenario as above, but a different wording: "Theft of EC2 instance credentials from the Instance Metadata Service"
     
       - ???
 
-    - **Identify behavior where EC2 instance user data is accessed via APIs, with particular attention to abnormal operations involving multiple user data retrievals within a short time frame.**
-    
-      - `Instance user data` is used to run commands when an EC2 instance is first started or after it is rebooted (with some configuration).
+    3. **Identify behavior where EC2 instance user data is accessed via APIs, with particular attention to abnormal operations involving multiple user data retrievals within a short time frame.**
+        - `Instance user data` is used to run commands when an EC2 instance is first started or after it is rebooted (with some configuration).
       Because this script is typically used _to install software and configure the instance_, this can be an excellent source of information for us as attackers. 
       _After gaining access to an EC2 instance you should immediately grab the user data script to gain information on the environment_ ([hackingthe.cloud](https://hackingthe.cloud/aws/general-knowledge/introduction_user_data/)).
-      - ATTACK: This attack is done via usage of `EC2:DescribeInstanceAttribute` API with `attribute` flag set to `userData` (`aws ec2 describe-instance-attribute --instance-id i-xxxxxxxxxxxxxxxxx --attribute userData`) ([AWS CLI command for DescribeInstanceAttribute](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instance-attribute.html))
-      - DETECTION: _EventCode_ - `Ec2:DescribeInstanceAttribute` usage with _requestParameters.attribute_ parameter set to `userData`.
+        - ATTACK: This attack is done via usage of `EC2:DescribeInstanceAttribute` API with `attribute` flag set to `userData` (`aws ec2 describe-instance-attribute --instance-id i-xxxxxxxxxxxxxxxxx --attribute userData`) ([AWS CLI command for DescribeInstanceAttribute](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instance-attribute.html))
+        - DETECTION: _EventCode_ - `Ec2:DescribeInstanceAttribute` usage with _requestParameters.attribute_ parameter set to `userData`.
 
-    - **Identifying an attacker running AWS discovery commands from an ec2 instance utilising the ec2 instance role**.
-
-      - DETECTION: AWS discovery commands are being run from an EC2 instance (meaning, having an EC2 instance Role) which is highly uncommon to be run, can be dumped via searching for _userIdentity.principalId_ 
+    4. **Identifying an attacker running AWS discovery commands from an ec2 instance utilising the ec2 instance role**.
+        - DETECTION: AWS discovery commands are being run from an EC2 instance (meaning, having an EC2 instance Role) which is highly uncommon to be run, can be dumped via searching for _userIdentity.principalId_ 
       containing the string `"i-{instanceid}"`
-      - DETECTION: If incase, AWS discovery commands are being run after ***assuming a role before hand***, then _userIdentity.principalId_ would look like this:
-      ```sql
-      # Won't be containing "i-{instanceid}"
-      <RoleUniqueId>:<RoleSessionName>
-      ```
-      In this case, looking for _userIdentity.arn_ parameter containing `"i-{instanceid}` string will always work!
-      - DETECTION: We can additionally also try to look for AWS discovery commands like, `s3:ListBuckets`, `iam:ListRoles`, `iam:ListUsers`, `iam:GetAccountAuthorizationDetails`, etc.
-      - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.discovery.ec2-enumerate-from-instance/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.discovery.ec2-enumerate-from-instance.md). 
+        - DETECTION: If incase, AWS discovery commands are being run after ***assuming a role before hand***, then _userIdentity.principalId_ would look like this:
+        ```sql
+        # Won't be containing "i-{instanceid}"
+        <RoleUniqueId>:<RoleSessionName>
+        ```
+        In this case, looking for _userIdentity.arn_ parameter containing `"i-{instanceid}` string will always work!
+        - DETECTION: We can additionally also try to look for AWS discovery commands like, `s3:ListBuckets`, `iam:ListRoles`, `iam:ListUsers`, `iam:GetAccountAuthorizationDetails`, etc. \
+        - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.discovery.ec2-enumerate-from-instance/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.discovery.ec2-enumerate-from-instance.md).
+     
+    5. ****.
 
 
 3. AWS Secrets Manager
@@ -91,7 +88,7 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 | 11. | Download EC2 Instance User Data | Write detection rules to identify behavior where EC2 instance user data is accessed via APIs, with particular attention to abnormal operations involving multiple user data retrievals within a short time frame. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/11.md) |
 | 12. | Enumerate SES Information Activities | Develop detection rules to identify SES enumeration activities | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/12.md) |
 | 13. | Bulk Remote Sessions Across Multiple Instances via SSM StartSession | Write a detection rule to identify bulk SSM StartSession requests targeting multiple EC2 instances within a short timeframe. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/13.md) |
-| 14. | AWS Security Group Public Exposure of SSH Port 22 | Write a detection rule to identify instances where the AuthorizeSecurityGroupIngress CloudTrail event is used to allow access to security group port 22 from unknown external IPs or from 0.0.0.0/0. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/14.md) |
+| 14. | AWS EC2 Security Group Public Exposure of SSH Port 22 | Write a detection rule to identify instances where the AuthorizeSecurityGroupIngress CloudTrail event is used to allow access to security group port 22 from unknown external IPs or from 0.0.0.0/0. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/14.md) |
 | 15. | Data Theft via Shared AMI | Write detection rules to identify behaviors where AMIs are shared with other accounts. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/15.md) |
 | 16. | Data Theft via Shared S3 Buckets | Write detection rules to identify suspicious authorization actions targeting S3 bucket policies. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/16.md) |
 | 17. | AWS IAM User Logged into Console Without MFA | Write a detection rule to identify IAM user login events to the AWS Console that occurred without MFA. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/17.md) |
