@@ -91,7 +91,7 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
     7. **Identify Open Ingress Port 22 on a Security Group**. OR, **AWS EC2 Security Group Public Exposure of SSH Port 22**.
         - DETECTION: _EventCode_ - `EC2:AuthorizeSecurityGroupIngress` with _requestParameters.cidrIp_ set to `0.0.0.0/0` or an uncommon external ip range.
         - DETECTION: Looking into _requestParameters.fromPort_ and _requestParameters.toPort_ having port numbers like, 22, 3389, etc (administrative protocols).
-        - DETECTION: In case, some _legit ips_ / _group-ids_ allow inbound traffic from the Internet, we can add that in Whitlist part of our detection/hunting query.
+        - DETECTION: In case, some _legit ips_ / _group-ids_ are needed to be allowed to perform inbound traffic from the Internet, we can add that in Whitelist part of our detection/hunting query.
         - source: [stratus-redteam](https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.ec2-security-group-open-port-22-ingress/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.exfiltration.ec2-security-group-open-port-22-ingress.md)
   
     8. **Share AMI of EC2** : **Sdentify behaviors where AMIs (private) are shared with other (external AWS) accounts.**
@@ -120,8 +120,9 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         }
         ```
         - DETECTION: _EventCode_ - `EC2:ModifyImageAttribute` will be our target during threat hunting.
-        - DETECTION: if _launchPermission.add.items_ has value `{"groups":"all"}` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to public.
-        - DETECTION: if _launchPermission.add.items_ has value `{ "userId": "<some id>" }` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to their own AWS account.
+        - DETECTION: if _launchPermission.add.items_ has value `{"groups":"all"}` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to **public**.
+        - DETECTION: if _launchPermission.add.items_ has value `{ "userId": "<some id>" }` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to **their own AWS account**.
+        - DETECTION: In case, some _legit AWS accounts_ are there to where AMI images are shared, we can add that in Whitelist part of our detection/hunting query.
         - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.ec2-share-ami/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.exfiltration.ec2-share-ami.md)
 
     9. **AWS EBS Snapshot** : ****
