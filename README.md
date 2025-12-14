@@ -38,7 +38,7 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 
     1. **Identify password data retrieval activities targeting Windows EC2 instances in an AWS environment.**
         - DETECTION: _EventCode_ - `Ec2:GetPasswordData` usage from an external aws account, we can also get attacker ip.
-        - DETECTION: Incase of attacker ip rotation, we have to perform SOAR operation of such query to run it in specific time of day, looking for outliers.
+        - DETECTION: FP: Incase of attacker ip rotation, we have to perform SOAR operation of such query to run it in specific time of day, looking for outliers.
     
     2. **Identify all API operations initiated with EC2 instance credentials where the credential’s originating account does not match the account where the API call occurs normally.** \
     OR, \
@@ -91,10 +91,10 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
     7. **Identify Open Ingress Port 22 on a Security Group**. OR, **AWS EC2 Security Group Public Exposure of SSH Port 22**.
         - DETECTION: _EventCode_ - `EC2:AuthorizeSecurityGroupIngress` with _requestParameters.cidrIp_ set to `0.0.0.0/0` or an uncommon external ip range.
         - DETECTION: Looking into _requestParameters.fromPort_ and _requestParameters.toPort_ having port numbers like, 22, 3389, etc (administrative protocols).
-        - DETECTION: In case, some _legit ips_ / _group-ids_ are needed to be allowed to perform inbound traffic from the Internet, we can add that in Whitelist part of our detection/hunting query.
+        - DETECTION: FP: In case, some _legit ips_ / _group-ids_ are needed to be allowed to perform inbound traffic from the Internet, we can add that in Whitelist part of our detection/hunting query.
         - source: [stratus-redteam](https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.ec2-security-group-open-port-22-ingress/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.exfiltration.ec2-security-group-open-port-22-ingress.md)
   
-    8. **Share AMI of EC2** : **Sdentify behaviors where AMIs (private) are shared with other (external AWS) accounts.**
+    8. **Share AMI of EC2** : **Identify behaviors where AMIs (private) are shared with other (external AWS) accounts.**
         - Attackers can share AMI via making them public.
         ```
         "requestParameters": {
@@ -122,10 +122,64 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         - DETECTION: _EventCode_ - `EC2:ModifyImageAttribute` will be our target during threat hunting.
         - DETECTION: if _launchPermission.add.items_ has value `{"groups":"all"}` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to **public**.
         - DETECTION: if _launchPermission.add.items_ has value `{ "userId": "<some id>" }` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to **their own AWS account**.
-        - DETECTION: In case, some _legit AWS accounts_ are there to where AMI images are shared, we can add that in Whitelist part of our detection/hunting query.
+        - DETECTION: FP: In case, some _legit AWS accounts_ are there to where AMI images are shared, we can add that in Whitelist part of our detection/hunting query.
         - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.ec2-share-ami/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.exfiltration.ec2-share-ami.md)
 
-    9. **AWS EBS Snapshot** : ****
+    9. **AWS EBS Snapshot** : **Identify behaviors where EBS Snapshot (private) are shared with other (external AWS) accounts.**
+        - Attackers can share EBS Snapshot via making them public - just like AMI.
+        ```
+        "requestParameters": {
+          "snapshotId": "snap-01b3f7d87a02559a1",
+          "attributeType": "CREATE_VOLUME_PERMISSION",
+          "createVolumePermission": {
+            "add": {
+              "items": [{ "userId": "111111111111" }]
+            }
+          }
+        }
+        ```
+        - Attackers can share EBS Snapshot via sharing them to their own AWS Accounts - just like AMI.
+        ```
+        "requestParameters": {
+          "snapshotId": "snap-01b3f7d87a02559a1",
+          "attributeType": "CREATE_VOLUME_PERMISSION",
+          "createVolumePermission": {
+            "add": {
+              "items": [{"groups":"all"}]
+            }
+          }
+        }
+        ```
+        - DETECTION: _EventCode_ - `EC2:ModifySnapshotAttribute` will be our target during threat hunting.
+        - DETECTION: if _createVolumePermission.add.items_ has value `{"groups":"all"}` meaning -> attacker made use of `EC2:ModifySnapshotAttribute` to share EBS Snapshot to **public**.
+        - DETECTION: if _createVolumePermission.add.items_ has value `{ "userId": "<some id>" }` meaning -> attacker made use of `EC2:ModifySnapshotAttribute` to share EBS Snapshot to **their own AWS account**.
+        - DETECTION: FP: In case, some _legit AWS accounts_ are there to where AMI images are shared, we can add that in Whitelist part of our detection/hunting query.
+        - DETECTION: When an attacker copies the snapshot to their own AWS account or creates an EBS volume for it, `SharedSnapshotCopyInitiated` and `SharedSnapshotVolumeCreated` API calls gets logged. 
+        In that log also, we can check for anomalies like, `userIdentity.accountId` (Attacker's account ID) won't match with `recipientAccountId` (Victim's account ID).
+        ```
+        {
+          "userIdentity": {
+            "invokedBy": "ec2.amazonaws.com",
+            "type": "AWSAccount",
+            "accountId": "999999999999"            <------------
+          },
+          "eventSource": "ec2.amazonaws.com",
+          "eventVersion": "1.08",
+          "eventTime": "2022-09-27T07:58:49Z",
+          "service": "cloudtrail",
+          "eventName": "SharedSnapshotCopyInitiated",
+          "eventType": "AwsServiceEvent",
+          "eventCategory": "Management",
+          "awsRegion": "us-east-1",
+            "serviceEventDetails": {
+            "snapshotId": "snap-12345"
+          },
+          "readOnly": false,
+          "managementEvent": true,
+          "recipientAccountId": "111111111111"          <------------
+         }
+        ```
+        - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.ec2-share-ami/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.exfiltration.ec2-share-ami.md)
 
     </details>
 
