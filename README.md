@@ -29,11 +29,12 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
       
 2. AWS EC2
     1. **Identify password data retrieval activities targeting Windows EC2 instances in an AWS environment.**
-      - DETECTION: _EventCode_ - `Ec2:GetPasswordData` usage from an external aws account, we can also get attacker ip.
-      - DETECTION: Incase of attacker ip rotation, we have to perform SOAR operation of such query to run it in specific time of day, looking for outliers.
+        - DETECTION: _EventCode_ - `Ec2:GetPasswordData` usage from an external aws account, we can also get attacker ip.
+        - DETECTION: Incase of attacker ip rotation, we have to perform SOAR operation of such query to run it in specific time of day, looking for outliers.
     
-    2. **Identify all API operations initiated with EC2 instance credentials where the credential’s originating account does not match the account where the API call occurs normally.** OR, **Theft of EC2 instance credentials from the Instance Metadata Service**
-    
+    2. **Identify all API operations initiated with EC2 instance credentials where the credential’s originating account does not match the account where the API call occurs normally.** \
+    OR, \
+    **Theft of EC2 instance credentials from the Instance Metadata Service**
       - ???
 
     3. **Identify behavior where EC2 instance user data is accessed via APIs, with particular attention to abnormal operations involving multiple user data retrievals within a short time frame.**
@@ -56,9 +57,34 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.discovery.ec2-enumerate-from-instance/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.discovery.ec2-enumerate-from-instance.md).
      
     5. **Identify bulk SSM StartSession requests targeting multiple EC2 instances within a short timeframe**.
-
+        - DETECTION:  _EventCode_ - `SSM:StartSession` 
+      
+    6. **Identify attacker utilizing AWS Systems Manager (SSM) to execute commands through SendCommand on multiple EC2 instances.**
+        - DETECTION:  _EventCode_ - `SSM:SendCommand` with _requestParameters.instanceIds_ with several instances (`"i-"`).
+        ```
+        {
+          "eventSource": "ssm.amazonaws.com",
+          "eventName": "SendCommand",
+          "requestParameters": {
+            "instanceIds": [
+              "i-0f364762ca43f9661",
+              "i-0a86d1f61db2b9b5d",
+              "i-08a69bfbe21c67e70"
+            ],
+            "documentName": "AWS-RunShellScript",
+            "parameters": "HIDDEN_DUE_TO_SECURITY_REASONS",
+            "interactive": false
+          }
+        }
+        ```
+        - DETECTION:  In case attacker use one call per instance to execute commands, _EventCode_ - `SSM:SendCommand` will have _requestParameters.instanceIds_ with single instances (`"i-"`) (Check once after doing practical).
+        - source: [stratus-redteam](https://stratus-red-team.cloud/attack-techniques/AWS/aws.execution.ssm-send-command/)
     
-    6. **Identify Open Ingress Port 22 on a Security Group**. OR, **AWS EC2 Security Group Public Exposure of SSH Port 22**.
+    7. **Identify Open Ingress Port 22 on a Security Group**. OR, **AWS EC2 Security Group Public Exposure of SSH Port 22**.
+  
+    8. **AWS AMI instance** : ****
+  
+    9. **AWS EBS Snapshot** : ****
 
 
 3. AWS Secrets Manager
@@ -69,9 +95,8 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 8. AWS VPC Flow Logs
 9. AWS SES
 10. AWS Security Group
-11. AWS AMI instance
-12. AWS IAM
-13. AWS KMS - For Ransomware detection scenarios.
+11. AWS IAM
+12. AWS KMS - For Ransomware detection scenarios.
 
 ## Scenarios:
 
