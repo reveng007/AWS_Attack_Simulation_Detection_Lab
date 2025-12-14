@@ -155,7 +155,7 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         - DETECTION: if _createVolumePermission.add.items_ has value `{ "userId": "<some id>" }` meaning -> attacker made use of `EC2:ModifySnapshotAttribute` to share EBS Snapshot to **their own AWS account**.
         - DETECTION: FP: In case, some _legit AWS accounts_ are there to where AMI images are shared, we can add that in Whitelist part of our detection/hunting query.
         - DETECTION: When an attacker copies the snapshot to their own AWS account or creates an EBS volume for it, `SharedSnapshotCopyInitiated` and `SharedSnapshotVolumeCreated` API calls gets logged. 
-        In that log also, we can check for anomalies like, `userIdentity.accountId` (Attacker's account ID) won't match with `recipientAccountId` (Victim's account ID).
+        In that log also, we can check for anomalies like, _userIdentity.accountId_ (Attacker's account ID) won't match with _recipientAccountId_ (Victim's account ID).
         ```
         {
           "userIdentity": {
