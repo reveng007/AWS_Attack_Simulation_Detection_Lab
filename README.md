@@ -21,13 +21,21 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 ## Sceanrios based on Different AWS Services:
 
 1. AWS S3
+
+    <details><summary>See Details</summary>
+
     1. **Access S3 from external AWS account**.
        - _EventCode_ - `S3:PutBucketPolicy` usage from an external aws account (Can also use _Effect_ paramter in TH of this attack, which will be set to `Allow`).
 
     2. **Disrupting CloudTrail Logging by using a S3 Lifecycle Rule thereby setting up a 1 day retention policy on the s3 bucket in which the logs are being stored**.
         - _EventCode_ - `S3:PutBucketLifecycle` usage from an external aws account and _expirationday_ is set to 1.
+        
+    </details>
       
 2. AWS EC2
+
+   <details><summary>See Details</summary>
+
     1. **Identify password data retrieval activities targeting Windows EC2 instances in an AWS environment.**
         - DETECTION: _EventCode_ - `Ec2:GetPasswordData` usage from an external aws account, we can also get attacker ip.
         - DETECTION: Incase of attacker ip rotation, we have to perform SOAR operation of such query to run it in specific time of day, looking for outliers.
@@ -114,9 +122,11 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         - DETECTION: _EventCode_ - `EC2:ModifyImageAttribute` will be our target during threat hunting.
         - DETECTION: if _launchPermission.add.items_ has value `{"groups":"all"}` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to public.
         - DETECTION: if _launchPermission.add.items_ has value `{ "userId": "<some id>" }` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to their own AWS account.
+        - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.ec2-share-ami/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.exfiltration.ec2-share-ami.md)
 
     9. **AWS EBS Snapshot** : ****
 
+    </details>
 
 3. AWS Secrets Manager
 4. AWS SSM
