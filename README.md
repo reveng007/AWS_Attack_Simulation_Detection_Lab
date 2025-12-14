@@ -57,7 +57,7 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         - source: [stratus-red-team](https://stratus-red-team.cloud/attack-techniques/AWS/aws.discovery.ec2-enumerate-from-instance/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.discovery.ec2-enumerate-from-instance.md).
      
     5. **Identify bulk SSM StartSession requests targeting multiple EC2 instances within a short timeframe**.
-        - DETECTION:  _EventCode_ - `SSM:StartSession` 
+        - DETECTION:  _EventCode_ - `SSM:StartSession` can be looked into.
       
     6. **Identify attacker utilizing AWS Systems Manager (SSM) to execute commands through SendCommand on multiple EC2 instances.**
         - DETECTION:  _EventCode_ - `SSM:SendCommand` with _requestParameters.instanceIds_ with several instances (`"i-"`).
@@ -81,9 +81,40 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
         - source: [stratus-redteam](https://stratus-red-team.cloud/attack-techniques/AWS/aws.execution.ssm-send-command/)
     
     7. **Identify Open Ingress Port 22 on a Security Group**. OR, **AWS EC2 Security Group Public Exposure of SSH Port 22**.
+        - DETECTION: _EventCode_ - `EC2:AuthorizeSecurityGroupIngress` with _requestParameters.cidrIp_ set to `0.0.0.0/0` or an uncommon external ip range.
+        - DETECTION: Looking into _requestParameters.fromPort_ and _requestParameters.toPort_ having port numbers like, 22, 3389, etc (administrative protocols).
+        - DETECTION: In case, some _legit ips_ / _group-ids_ allow inbound traffic from the Internet, we can add that in Whitlist part of our detection/hunting query.
+        - source: [stratus-redteam](https://stratus-red-team.cloud/attack-techniques/AWS/aws.exfiltration.ec2-security-group-open-port-22-ingress/), [basu-github](https://github.com/sbasu7241/AWS-Threat-Simulation-and-Detection/blob/main/aws.exfiltration.ec2-security-group-open-port-22-ingress.md)
   
-    8. **AWS AMI instance** : ****
-  
+    8. **Share AMI of EC2** : **Sdentify behaviors where AMIs (private) are shared with other (external AWS) accounts.**
+        - Attackers can share AMI via making them public.
+        ```
+        "requestParameters": {
+          "launchPermission": {
+            "add": {
+              "items": [{ "group": "all" }]            <---------
+            }
+          },
+          "attributeType": "launchPermission",
+          "imageId": "ami-0b87ea1d007078d18"
+        }
+        ```
+        - Attackers can share AMI via sharing them to their own AWS Accounts.
+        ```
+        "requestParameters": {
+          "launchPermission": {
+            "add": {
+              "items": [{ "userId": "012345678901" }]        <---------
+            }
+          },
+          "attributeType": "launchPermission",
+          "imageId": "ami-0b87ea1d007078d18"
+        }
+        ```
+        - DETECTION: _EventCode_ - `EC2:ModifyImageAttribute` will be our target during threat hunting.
+        - DETECTION: if _launchPermission.add.items_ has value `{"groups":"all"}` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to public.
+        - DETECTION: if _launchPermission.add.items_ has value `{ "userId": "<some id>" }` meaning -> attacker made use of `EC2:ModifyImageAttribute` to share AMI to their own AWS account.
+
     9. **AWS EBS Snapshot** : ****
 
 
@@ -116,7 +147,7 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
 | 12. | Enumerate SES Information Activities | Develop detection rules to identify SES enumeration activities | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/12.md) |
 | 13. | Bulk Remote Sessions Across Multiple EC2 Instances via SSM StartSession | Write a detection rule to identify bulk SSM StartSession requests targeting multiple EC2 instances within a short timeframe. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/13.md) |
 | 14. | AWS EC2 Security Group Public Exposure of SSH Port 22 | Write a detection rule to identify instances where the AuthorizeSecurityGroupIngress CloudTrail event is used to allow access to security group port 22 from unknown external IPs or from 0.0.0.0/0. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/14.md) |
-| 15. | Data Theft via Shared AMI | Write detection rules to identify behaviors where AMIs are shared with other accounts. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/15.md) |
+| 15. | Share AMI of AWS EC2 | Write detection rules to identify behaviors where AMIs are shared with other accounts. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/15.md) |
 | 16. | Data Theft via Shared S3 Buckets | Write detection rules to identify suspicious authorization actions targeting S3 bucket policies. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/16.md) |
 | 17. | AWS IAM User Logged into Console Without MFA | Write a detection rule to identify IAM user login events to the AWS Console that occurred without MFA. | [link](https://github.com/reveng007/AWS_Attack_Simulation_Detection_Lab/blob/main/Queries/17.md) |
 
