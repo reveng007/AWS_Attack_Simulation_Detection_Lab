@@ -25,7 +25,10 @@ See this example: [no. 17](https://github.com/reveng007/AWS_Attack_Detection_soc
     <details><summary>See Details</summary>
 
     1. **Access S3 from external AWS account**.
-       - _EventCode_ - `S3:PutBucketPolicy` usage from an external aws account (Can also use _Effect_ paramter in TH of this attack, which will be set to `Allow`).
+       - DETECTION 1: _EventCode_ - `S3:PutBucketPolicy` usage from an external aws account (Can also use _Effect_ paramter in TH of this attack, which will be set to `Allow`).
+       - _EventCode_ - `S3:PutBucketPolicy` if applied to the bucket policy document that grant access to external AWS accounts,
+       bypassing existing permission controls and enabling long-term unauthorized access.
+       - DETECTION 2: _EventCode_ - `S3:PutBucketACL` usage to make a S3 bucket publicly accessible. JSON structure can be found [here]().
 
     2. **Disrupting CloudTrail Logging by using a S3 Lifecycle Rule thereby setting up a 1 day retention policy on the s3 bucket in which the logs are being stored**.
         - _EventCode_ - `S3:PutBucketLifecycle` usage from an external aws account and _expirationday_ is set to 1.
